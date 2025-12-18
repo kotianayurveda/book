@@ -8,7 +8,8 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const m = getCookie("mobile");
+    
+     const m = localStorage.getItem("mobile");
     if (m) {
       setMobile(m);
       loadBookings(m);

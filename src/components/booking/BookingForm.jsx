@@ -24,7 +24,7 @@ const submit = async () => {
     await bookAppointment({ ...form, date });
 
     // 🔹 Store mobile number in cookie (expires in 7 days)
-    document.cookie = `mobile=${form.mobile}; path=/; max-age=${7 * 24 * 60 * 60}`;
+     localStorage.setItem("mobile", form.mobile);
 
     toast.success("Appointment booked successfully!");
 
