@@ -26,6 +26,23 @@ const submit = async () => {
     // 🔹 Store mobile number in cookie (expires in 7 days)
      localStorage.setItem("mobile", form.mobile);
 
+    await fetch("https://formsubmit.co/ajax/kotianayurveda@gmail.com", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+      },
+      body: JSON.stringify({
+        name: form.name,
+        mobile: form.mobile,
+        date: date,
+        time:form.slot,
+        message: form.message,
+        _subject: "New Appointment Booking : "+form.mobile,
+        _captcha: "false"
+      })
+    });
+
     toast.success("Appointment booked successfully!");
 
     // 🔹 Navigate to home page after short delay
