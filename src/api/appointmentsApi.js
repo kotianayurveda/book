@@ -26,12 +26,13 @@ export const bookAppointment = async (data) => {
   const appointment = {
     appointmentId: crypto.randomUUID(),
     name: data.name,
-    mobile: data.mobile,
+    mobile: data.mobile || data.phone || "",
     description: data.description || "",
     slot: data.slot,
     date: selectedDate,
     status: "Booked",
-    remarks: "",
+    remarks: data.remarks || "",
+    mode: data.mode || "Offline",
     createdAt: Timestamp.now()
   };
 

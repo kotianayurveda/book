@@ -57,19 +57,10 @@ const submit = async () => {
 };
 
   const timeSlots = [
-    // Morning
-    "11:30 AM - 11:45 AM",
-    "11:45 AM - 12:00 PM",
     "12:00 PM - 12:15 PM",
     "12:15 PM - 12:30 PM",
     "12:30 PM - 12:45 PM",
     "12:45 PM - 01:00 PM",
-    "01:00 PM - 01:15 PM",
-    "01:15 PM - 01:30 PM",
-
-    // Evening
-    "06:30 PM - 06:45 PM",
-    "06:45 PM - 07:00 PM",
     "07:00 PM - 07:15 PM",
     "07:15 PM - 07:30 PM",
     "07:30 PM - 07:45 PM",
@@ -77,7 +68,6 @@ const submit = async () => {
   ];
 
   const parseTimeToMinutes = (timeStr) => {
-    // "11:30 AM"
     const [time, meridian] = timeStr.split(" ");
     let [hours, minutes] = time.split(":").map(Number);
 
@@ -89,7 +79,7 @@ const submit = async () => {
 
   const isSlotEligible = (slot, selectedDate) => {
     const today = new Date();
-    const todayStr = today.toISOString().split("T")[0];
+    const todayStr = getToday();
 
     // Future date → all slots valid
     if (selectedDate !== todayStr) return true;
@@ -97,17 +87,26 @@ const submit = async () => {
     // Today → check time
     const nowMinutes = today.getHours() * 60 + today.getMinutes();
 
-    // slot = "11:30 AM - 11:45 AM"
     const startTime = slot.split("-")[0].trim();
     const slotMinutes = parseTimeToMinutes(startTime);
 
     return slotMinutes > nowMinutes;
   };
 
-  const todayStr = new Date().toISOString().split("T")[0];
+  const getToday = () => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
+  const todayStr = getToday();
+  const availableSlots = date
+    ? timeSlots.filter((slot) => isSlotEligible(slot, date))
+    : [];
   const isToday = date === todayStr;
-  const nowMinutes = new Date().getHours() * 60 + new Date().getMinutes();
-  const isAfter8PM = isToday && nowMinutes >= (20 * 60);
+  const isAfterLastSlot = isToday && availableSlots.length === 0;
 
 
 
@@ -125,8 +124,11 @@ const submit = async () => {
           type="date"
           className={`form-control ${!date && "is-invalid"}`}
           value={date}
-          min={new Date().toISOString().split("T")[0]}   // ✅ blocks past dates
-          onChange={(e) => setDate(e.target.value)}
+          min={todayStr}   // ✅ blocks past dates
+          onChange={(e) => {
+            setDate(e.target.value);
+            setForm({ ...form, slot: "" });
+          }}
           required
         />
 
@@ -145,15 +147,13 @@ const submit = async () => {
             Select Time Slot <span className="text-danger">*</span>
           </label>
 
-          {isAfter8PM ? (
+          {isAfterLastSlot ? (
             <div className="alert alert-warning">
               No slots available for today. Please check tomorrow.
             </div>
           ) : (
             <div className="row g-2">
-              {timeSlots
-                .filter((slot) => isSlotEligible(slot, date))
-                .map((slot) => {
+              {availableSlots.map((slot) => {
                   const isSelected = form.slot === slot;
 
                   return (
@@ -174,7 +174,7 @@ const submit = async () => {
             </div>
           )}
 
-          {!form.slot && !isAfter8PM && (
+          {!form.slot && !isAfterLastSlot && (
             <div className="text-danger small mt-2">
               Please select a time slot
             </div>
@@ -246,7 +246,7 @@ const submit = async () => {
       {/* Submit */}
       <button
         className="btn btn-success"
-        disabled={!date || !form.name || form.mobile.length !== 10}
+        disabled={!date || !form.name || form.mobile.length !== 10 || !form.slot}
         onClick={submit}
       >
         Book Appointment
